@@ -1,0 +1,12 @@
+permissions:
+  streams:
+    mystream:
+      publish: {}
+      consume: {}
+  kv:
+    mykv:
+      view: {}
+      create: {}
+      delete: {}
+      read: []
+      write: []
