@@ -33,7 +33,7 @@ func TestKVCreate(t *testing.T) {
 			Description: "A test kv",
 		})
 		require.NoError(t, err)
-
+		requireNoErrors(t, errCh)
 	})
 
 	t.Run("cannot list all the stores", func(t *testing.T) {
@@ -52,11 +52,13 @@ func TestKVReadAnyKey(t *testing.T) {
 
 	kv, err := js.KeyValue(t.Context(), "kv")
 	require.NoError(t, err)
+	requireNoErrors(t, errCh)
 
 	t.Run("get all the keys in the store", func(t *testing.T) {
 		for i := range 5 {
 			_, err := kv.Get(t.Context(), fmt.Sprintf("key%d", i))
 			require.NoError(t, err)
+			requireNoErrors(t, errCh)
 		}
 	})
 
@@ -81,11 +83,12 @@ func TestKVReadKey(t *testing.T) {
 
 	kv, err := js.KeyValue(t.Context(), "kv")
 	require.NoError(t, err)
+	requireNoErrors(t, errCh)
 
 	t.Run("read authorized key", func(t *testing.T) {
 		_, err := kv.Get(t.Context(), "key1")
 		require.NoError(t, err)
-
+		requireNoErrors(t, errCh)
 	})
 
 	t.Run("cannot read unauthorized key", func(t *testing.T) {
@@ -102,15 +105,18 @@ func TestKVWriteAnyKey(t *testing.T) {
 
 	kv, err := js.KeyValue(t.Context(), "kv")
 	require.NoError(t, err)
+	requireNoErrors(t, errCh)
 
 	t.Run("write a new key", func(t *testing.T) {
 		_, err := kv.PutString(t.Context(), "newkey", "newvalue")
 		require.NoError(t, err)
+		requireNoErrors(t, errCh)
 	})
 
 	t.Run("update an existing key", func(t *testing.T) {
 		_, err := kv.PutString(t.Context(), "key1", "new value 1")
 		require.NoError(t, err)
+		requireNoErrors(t, errCh)
 	})
 
 	t.Run("cannot read a key", func(t *testing.T) {

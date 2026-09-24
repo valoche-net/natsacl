@@ -20,6 +20,7 @@ func TestStreamCreate(t *testing.T) {
 		Subjects:    []string{"dummysub.>"},
 	})
 	require.NoError(t, err)
+	requireNoErrors(t, errCh)
 
 	_, err = js.CreateStream(deniedContext(t), jetstream.StreamConfig{
 		Name:        "stream2",

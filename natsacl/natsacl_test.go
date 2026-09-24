@@ -46,6 +46,17 @@ func runNATSserver(t *testing.T, users ...*server.User) *server.Server {
 	return s
 }
 
+func requireNoErrors(t *testing.T, errCh <-chan error) {
+	t.Helper()
+
+	select {
+	case err := <-errCh:
+		t.Fatalf("expected no error, got %q", err)
+	case <-time.After(time.Second):
+		return
+	}
+}
+
 func requirePermissionViolation(t *testing.T, errCh <-chan error, subject string) {
 	t.Helper()
 

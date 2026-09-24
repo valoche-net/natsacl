@@ -30,7 +30,7 @@ func (s *KVBuilder) All() *KVBuilder {
 
 // List gives the permissions to list the store
 func (s *KVBuilder) List() *KVBuilder {
-	s.parent.name()
+	s.parent.names()
 	return s
 }
 

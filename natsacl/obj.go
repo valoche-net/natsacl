@@ -33,7 +33,7 @@ func (s *ObjBuilder) All() *ObjBuilder {
 
 // List gives the permissions to list the store
 func (s *ObjBuilder) List() *ObjBuilder {
-	s.parent.list()
+	s.parent.names()
 	return s
 }
 

@@ -57,7 +57,7 @@ func (b *Builder) info() {
 	b.inbox()
 }
 
-func (b *Builder) name() {
+func (b *Builder) names() {
 	b.pub["$JS.API.STREAM.NAMES"] = nil
 	b.inbox()
 
