@@ -52,7 +52,7 @@ func requireNoErrors(t *testing.T, errCh <-chan error) {
 	select {
 	case err := <-errCh:
 		t.Fatalf("expected no error, got %q", err)
-	case <-time.After(time.Second):
+	case <-time.After(250 * time.Millisecond):
 		return
 	}
 }
@@ -64,7 +64,7 @@ func requirePermissionViolation(t *testing.T, errCh <-chan error, subject string
 	case err := <-errCh:
 		require.Contains(t, err.Error(), "Permissions Violation")
 		require.Contains(t, err.Error(), fmt.Sprintf(`"%s"`, subject))
-	case <-time.After(time.Second):
+	case <-time.After(250 * time.Millisecond):
 		t.Fatalf("expected permission violation for %q", subject)
 	}
 }
@@ -161,11 +161,11 @@ func connectTestUser(t *testing.T, s *server.Server) (*nats.Conn, jetstream.JetS
 	return nc, js, errCh
 }
 
-// deniedContext is used to prevent JetStream 5 secondes timeout for testing denied operations
-func deniedContext(t *testing.T) context.Context {
+// fastContext is used to prevent JetStream 5 secondes timeout for testing operations
+func fastContext(t *testing.T) context.Context {
 	t.Helper()
 
-	ctx, cancel := context.WithTimeout(t.Context(), 250*time.Millisecond)
+	ctx, cancel := context.WithTimeout(t.Context(), 500*time.Millisecond)
 
 	t.Cleanup(cancel)
 	return ctx

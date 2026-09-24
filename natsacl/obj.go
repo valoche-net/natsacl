@@ -21,6 +21,14 @@ func (b *Builder) Obj(name string) *ObjBuilder {
 	return &o
 }
 
+// stream returns the underlying stream name
+func (s *ObjBuilder) stream() string {
+	if s.name == "*" {
+		return "*"
+	}
+	return fmt.Sprintf("OBJ_%s", s.name)
+}
+
 // Build returns the parent builder
 func (s *ObjBuilder) Build() *Builder {
 	return s.parent
@@ -42,18 +50,19 @@ func (s *ObjBuilder) List() *ObjBuilder {
 // ⚠️ It also gives the permissions to watch, hence seeing the data
 func (s *ObjBuilder) View() *ObjBuilder {
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_%s.$O.%s.M.>", s.name, s.name),
-		fmt.Sprintf("$JS.API.STREAM.INFO.OBJ_%s", s.name),
-		fmt.Sprintf("$JS.API.CONSUMER.CREATE.OBJ_%s.*.$O.%s.M.>", s.name, s.name),
-		fmt.Sprintf("$JS.API.CONSUMER.DELETE.OBJ_%s.*", s.name),
+		fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.>", s.stream(), s.name),
+		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
+		fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$O.%s.M.>", s.stream(), s.name),
+		fmt.Sprintf("$JS.API.CONSUMER.DELETE.%s.*", s.stream()),
 	)
 	return s
 }
 
-// Create gives the permissions to create a store
+// Create gives the permissions to create/update a store
 func (s *ObjBuilder) Create() *ObjBuilder {
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.STREAM.CREATE.OBJ_%s", s.name),
+		fmt.Sprintf("$JS.API.STREAM.CREATE.%s", s.stream()),
+		fmt.Sprintf("$JS.API.STREAM.UPDATE.%s", s.stream()),
 	)
 	return s
 }
@@ -61,7 +70,7 @@ func (s *ObjBuilder) Create() *ObjBuilder {
 // Delete gives the permissions to delete a store
 func (s *ObjBuilder) Delete() *ObjBuilder {
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.STREAM.DELETE.OBJ_%s", s.name),
+		fmt.Sprintf("$JS.API.STREAM.DELETE.%s", s.stream()),
 	)
 	return s
 }
@@ -72,23 +81,23 @@ func (s *ObjBuilder) Delete() *ObjBuilder {
 func (s *ObjBuilder) Read(keys ...string) *ObjBuilder {
 	if len(keys) == 0 {
 		s.parent.allowPub(
-			fmt.Sprintf("$JS.API.CONSUMER.CREATE.OBJ_%s.*.$O.%s.M.*", s.name, s.name),
-			fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_%s.$O.%s.M.>", s.name, s.name),
+			fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$O.%s.M.*", s.stream(), s.name),
+			fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.>", s.stream(), s.name),
 		)
 	} else {
 		for _, key := range keys {
 			b64key := base64.StdEncoding.EncodeToString([]byte(key))
 			s.parent.allowPub(
-				fmt.Sprintf("$JS.API.CONSUMER.CREATE.OBJ_%s.*.$O.%s.M.%s", s.name, s.name, b64key),
-				fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_%s.$O.%s.M.%s", s.name, s.name, b64key),
+				fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$O.%s.M.%s", s.stream(), s.name, b64key),
+				fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.%s", s.stream(), s.name, b64key),
 			)
 		}
 
 	}
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.STREAM.INFO.OBJ_%s", s.name),
-		fmt.Sprintf("$JS.API.CONSUMER.CREATE.OBJ_%s.*.$O.%s.C.*", s.name, s.name),
-		fmt.Sprintf("$JS.API.CONSUMER.DELETE.OBJ_%s.*", s.name),
+		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
+		fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$O.%s.C.*", s.stream(), s.name),
+		fmt.Sprintf("$JS.API.CONSUMER.DELETE.%s.*", s.stream()),
 	)
 	return s
 }
@@ -97,21 +106,21 @@ func (s *ObjBuilder) Read(keys ...string) *ObjBuilder {
 func (s *ObjBuilder) Write(keys ...string) *ObjBuilder {
 	if len(keys) == 0 {
 		s.parent.allowPub(
-			fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_%s.$O.%s.M.*", s.name, s.name),
+			fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.*", s.stream(), s.name),
 			fmt.Sprintf("$O.%s.M.*", s.name),
 		)
 	} else {
 		for _, key := range keys {
 			b64key := base64.StdEncoding.EncodeToString([]byte(key))
 			s.parent.allowPub(
-				fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_%s.$O.%s.M.%s", s.name, s.name, b64key),
+				fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.%s", s.stream(), s.name, b64key),
 				fmt.Sprintf("$O.%s.M.%s", s.name, b64key),
 			)
 		}
 	}
 	s.parent.allowPub(
 		fmt.Sprintf("$O.%s.C.*", s.name),
-		fmt.Sprintf("$JS.API.STREAM.PURGE.OBJ_%s", s.name),
+		fmt.Sprintf("$JS.API.STREAM.PURGE.%s", s.stream()),
 	)
 	return s
 }
@@ -119,8 +128,8 @@ func (s *ObjBuilder) Write(keys ...string) *ObjBuilder {
 // Seal gives the permissions to seal a store
 func (s *ObjBuilder) Seal() *ObjBuilder {
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.STREAM.INFO.OBJ_%s", s.name),
-		fmt.Sprintf("$JS.API.STREAM.UPDATE.OBJ_%s", s.name),
+		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
+		fmt.Sprintf("$JS.API.STREAM.UPDATE.%s", s.stream()),
 	)
 	return s
 }

@@ -23,7 +23,7 @@ func (s *StreamBuilder) Build() *Builder {
 
 // All gives all permissions except List
 func (s *StreamBuilder) All() *StreamBuilder {
-	return s.List().Consume().Create().Update().Delete().Info().GetMessage().DeleteMessage().Purge()
+	return s.List().Create().Delete().Consume().Info().GetMessage().DeleteMessage().Purge()
 }
 
 // List gives the permissions to list the streams
@@ -45,21 +45,14 @@ func (s *StreamBuilder) Consume() *StreamBuilder {
 	return s
 }
 
-// Create gives the permissions to create a stream
+// Create gives the permissions to create/update a stream
 func (s *StreamBuilder) Create() *StreamBuilder {
 	s.parent.allowPub(
 		"$JS.API.INFO",
 		fmt.Sprintf("$JS.API.STREAM.CREATE.%s", s.name),
-	)
-	s.parent.inbox()
-	return s
-}
-
-// Update gives the permissions to update a stream
-func (s *StreamBuilder) Update() *StreamBuilder {
-	s.parent.allowPub(
 		fmt.Sprintf("$JS.API.STREAM.UPDATE.%s", s.name),
 	)
+	s.parent.inbox()
 	return s
 }
 

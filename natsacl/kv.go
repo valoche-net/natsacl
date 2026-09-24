@@ -18,6 +18,14 @@ func (b *Builder) KV(name string) *KVBuilder {
 	return &k
 }
 
+// stream returns the underlying stream name
+func (s *KVBuilder) stream() string {
+	if s.name == "*" {
+		return "*"
+	}
+	return fmt.Sprintf("KV_%s", s.name)
+}
+
 // Build returns the parent builder
 func (s *KVBuilder) Build() *Builder {
 	return s.parent
@@ -39,9 +47,9 @@ func (s *KVBuilder) List() *KVBuilder {
 // ⚠️ It also gives the permissions to watch, hence seeing the data
 func (s *KVBuilder) View() *KVBuilder {
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.STREAM.INFO.KV_%s", s.name),
-		fmt.Sprintf("$JS.API.CONSUMER.CREATE.KV_%s.*.$KV.%s.>", s.name, s.name),
-		fmt.Sprintf("$JS.API.CONSUMER.DELETE.KV_%s.*", s.name),
+		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
+		fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$KV.%s.>", s.stream(), s.name),
+		fmt.Sprintf("$JS.API.CONSUMER.DELETE.%s.*", s.stream()),
 	)
 	return s
 }
@@ -50,7 +58,7 @@ func (s *KVBuilder) View() *KVBuilder {
 func (s *KVBuilder) Create() *KVBuilder {
 	s.parent.info()
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.STREAM.CREATE.KV_%s", s.name),
+		fmt.Sprintf("$JS.API.STREAM.CREATE.%s", s.stream()),
 	)
 	return s
 }
@@ -58,7 +66,7 @@ func (s *KVBuilder) Create() *KVBuilder {
 // Delete gives the permissions to delete a store
 func (s *KVBuilder) Delete() *KVBuilder {
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.STREAM.DELETE.KV_%s", s.name),
+		fmt.Sprintf("$JS.API.STREAM.DELETE.%s", s.stream()),
 	)
 	return s
 }
@@ -66,18 +74,18 @@ func (s *KVBuilder) Delete() *KVBuilder {
 // Read gives the permissions to get data from a store, optionally restricted to certain keys
 func (s *KVBuilder) Read(keys ...string) *KVBuilder {
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.STREAM.INFO.KV_%s", s.name),
+		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
 	)
 	if len(keys) == 0 {
 		s.View()
 		s.parent.allowPub(
-			fmt.Sprintf("$JS.API.DIRECT.GET.KV_%s.$KV.%s.*", s.name, s.name),
+			fmt.Sprintf("$JS.API.DIRECT.GET.%s.$KV.%s.*", s.stream(), s.name),
 		)
 		return s
 	}
 	for _, key := range keys {
 		s.parent.allowPub(
-			fmt.Sprintf("$JS.API.DIRECT.GET.KV_%s.$KV.%s.%s", s.name, s.name, key),
+			fmt.Sprintf("$JS.API.DIRECT.GET.%s.$KV.%s.%s", s.stream(), s.name, key),
 		)
 	}
 	return s
@@ -86,7 +94,7 @@ func (s *KVBuilder) Read(keys ...string) *KVBuilder {
 // Write gives the permissions to create or update data in a store, optionally restricted to certain keys
 func (s *KVBuilder) Write(keys ...string) *KVBuilder {
 	s.parent.allowPub(
-		fmt.Sprintf("$JS.API.STREAM.INFO.KV_%s", s.name),
+		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
 	)
 	if len(keys) == 0 {
 		s.parent.allowPub(

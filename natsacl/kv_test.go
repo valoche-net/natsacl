@@ -16,19 +16,19 @@ func TestKVCreate(t *testing.T) {
 	nc, js, errCh := connectTestUser(t, s)
 
 	t.Run("can create requested KV", func(t *testing.T) {
-		kv, err := js.CreateKeyValue(t.Context(), jetstream.KeyValueConfig{
+		kv, err := js.CreateKeyValue(fastContext(t), jetstream.KeyValueConfig{
 			Bucket:      "mykv",
 			Description: "A test kv",
 		})
 		require.NoError(t, err)
 		clearErrors(t, nc, errCh)
-		_, err = kv.Create(deniedContext(t), "akey", []byte("a value"))
+		_, err = kv.Create(fastContext(t), "akey", []byte("a value"))
 		require.Error(t, err)
 		requirePermissionViolation(t, errCh, "$KV.mykv.akey")
 
 	})
 	t.Run("cannot create another KV", func(t *testing.T) {
-		_, err := js.CreateKeyValue(t.Context(), jetstream.KeyValueConfig{
+		_, err := js.CreateKeyValue(fastContext(t), jetstream.KeyValueConfig{
 			Bucket:      "mykv",
 			Description: "A test kv",
 		})
@@ -38,7 +38,7 @@ func TestKVCreate(t *testing.T) {
 
 	t.Run("cannot list all the stores", func(t *testing.T) {
 		clearErrors(t, nc, errCh)
-		stores := js.KeyValueStoreNames(t.Context())
+		stores := js.KeyValueStoreNames(fastContext(t))
 		require.NoError(t, stores.Error())
 		requirePermissionViolation(t, errCh, "$JS.API.STREAM.NAMES")
 	})
@@ -50,51 +50,66 @@ func TestKVReadAnyKey(t *testing.T) {
 	s := runNATSserverWithPerms(t, perms)
 	_, js, errCh := connectTestUser(t, s)
 
-	kv, err := js.KeyValue(t.Context(), "kv")
+	kv, err := js.KeyValue(fastContext(t), "kv")
 	require.NoError(t, err)
 	requireNoErrors(t, errCh)
 
 	t.Run("get all the keys in the store", func(t *testing.T) {
 		for i := range 5 {
-			_, err := kv.Get(t.Context(), fmt.Sprintf("key%d", i))
+			_, err := kv.Get(fastContext(t), fmt.Sprintf("key%d", i))
 			require.NoError(t, err)
 			requireNoErrors(t, errCh)
 		}
 	})
 
 	t.Run("cannot update a key", func(t *testing.T) {
-		_, err = kv.PutString(deniedContext(t), "key1", "new value")
+		_, err = kv.PutString(fastContext(t), "key1", "new value")
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 		requirePermissionViolation(t, errCh, "$KV.kv.key1")
 	})
 
 	t.Run("cannot create a new key", func(t *testing.T) {
-		_, err = kv.PutString(deniedContext(t), "akey", "avalue")
+		_, err = kv.PutString(fastContext(t), "akey", "avalue")
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 		requirePermissionViolation(t, errCh, "$KV.kv.akey")
 	})
 }
 
-func TestKVReadKey(t *testing.T) {
-	perms := NewBuilder().KV("kv").Read("key1").Build()
+func TestKVReadWriteKey(t *testing.T) {
+	perms := NewBuilder().KV("kv").Read("key1").Write("key3", "newkey").Build()
 
 	s := runNATSserverWithPerms(t, perms)
 	_, js, errCh := connectTestUser(t, s)
 
-	kv, err := js.KeyValue(t.Context(), "kv")
+	kv, err := js.KeyValue(fastContext(t), "kv")
 	require.NoError(t, err)
 	requireNoErrors(t, errCh)
 
 	t.Run("read authorized key", func(t *testing.T) {
-		_, err := kv.Get(t.Context(), "key1")
+		_, err := kv.Get(fastContext(t), "key1")
 		require.NoError(t, err)
 		requireNoErrors(t, errCh)
 	})
 
 	t.Run("cannot read unauthorized key", func(t *testing.T) {
-		_, err := kv.Get(deniedContext(t), "key2")
+		_, err := kv.Get(fastContext(t), "key2")
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 		requirePermissionViolation(t, errCh, "$JS.API.DIRECT.GET.KV_kv.$KV.kv.key2")
+	})
+
+	t.Run("can write authorized key", func(t *testing.T) {
+		_, err := kv.PutString(fastContext(t), "key3", "value3")
+		require.NoError(t, err)
+		requireNoErrors(t, errCh)
+		_, err = kv.PutString(fastContext(t), "newkey", "value3")
+		require.NoError(t, err)
+		requireNoErrors(t, errCh)
+	})
+
+	t.Run("cannot write to unauthorized key", func(t *testing.T) {
+		_, err := kv.PutString(fastContext(t), "akey", "avalue")
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+		requirePermissionViolation(t, errCh, "$KV.kv.akey")
 	})
 }
 
@@ -103,24 +118,24 @@ func TestKVWriteAnyKey(t *testing.T) {
 	s := runNATSserverWithPerms(t, perms)
 	_, js, errCh := connectTestUser(t, s)
 
-	kv, err := js.KeyValue(t.Context(), "kv")
+	kv, err := js.KeyValue(fastContext(t), "kv")
 	require.NoError(t, err)
 	requireNoErrors(t, errCh)
 
 	t.Run("write a new key", func(t *testing.T) {
-		_, err := kv.PutString(t.Context(), "newkey", "newvalue")
+		_, err := kv.PutString(fastContext(t), "newkey", "newvalue")
 		require.NoError(t, err)
 		requireNoErrors(t, errCh)
 	})
 
 	t.Run("update an existing key", func(t *testing.T) {
-		_, err := kv.PutString(t.Context(), "key1", "new value 1")
+		_, err := kv.PutString(fastContext(t), "key1", "new value 1")
 		require.NoError(t, err)
 		requireNoErrors(t, errCh)
 	})
 
 	t.Run("cannot read a key", func(t *testing.T) {
-		_, err := kv.Get(deniedContext(t), "key1")
+		_, err := kv.Get(fastContext(t), "key1")
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 		requirePermissionViolation(t, errCh, "$JS.API.DIRECT.GET.KV_kv.$KV.kv.key1")
 	})

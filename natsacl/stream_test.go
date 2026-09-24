@@ -22,14 +22,14 @@ func TestStreamCreate(t *testing.T) {
 	require.NoError(t, err)
 	requireNoErrors(t, errCh)
 
-	_, err = js.CreateStream(deniedContext(t), jetstream.StreamConfig{
+	_, err = js.CreateStream(fastContext(t), jetstream.StreamConfig{
 		Name:        "stream2",
 		Description: "Test stream which will fail",
 		Subjects:    []string{"dummysub2.>"},
 	})
 	require.ErrorIs(t, err, context.DeadlineExceeded)
 
-	_, err = js.Publish(deniedContext(t), "dummy.test", []byte("payload"))
+	_, err = js.Publish(fastContext(t), "dummy.test", []byte("payload"))
 	require.ErrorIs(t, err, context.DeadlineExceeded)
 
 	clearErrors(t, nc, errCh)
