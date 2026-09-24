@@ -58,23 +58,31 @@ func requirePermissionViolation(t *testing.T, errCh <-chan error, subject string
 	}
 }
 
-func runNATSserverWithPerms(t *testing.T, perms *Builder) *server.Server {
+func runNATSserverWithPerms(t *testing.T, perms ...*Builder) *server.Server {
 	t.Helper()
 
-	user := &server.User{
-		Username: "testuser",
-		Password: "testuser",
-		Permissions: &server.Permissions{
-			Publish: &server.SubjectPermission{
-				Allow: perms.Pub(),
+	var users []*server.User
+	for i, perm := range perms {
+		username := "testuser"
+		if len(perms) > 1 {
+			username = fmt.Sprintf("testuser%d", i)
+		}
+
+		users = append(users, &server.User{
+			Username: username,
+			Password: "testuser",
+			Permissions: &server.Permissions{
+				Publish: &server.SubjectPermission{
+					Allow: perm.Pub(),
+				},
+				Subscribe: &server.SubjectPermission{
+					Allow: perm.Sub(),
+				},
 			},
-			Subscribe: &server.SubjectPermission{
-				Allow: perms.Sub(),
-			},
-		},
+		})
 	}
 
-	return runNATSserver(t, user)
+	return runNATSserver(t, users...)
 }
 
 func connectAdmin(t *testing.T, s *server.Server) *nats.Conn {

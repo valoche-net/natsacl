@@ -43,3 +43,42 @@ func TestOBJCreate(t *testing.T) {
 		requirePermissionViolation(t, errCh, fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_myobj.$O.myobj.M.%s", b64entry))
 	})
 }
+
+func TestObjRead1(t *testing.T) {
+	perms := NewBuilder().Obj("obj").Read("file1", "file2").Write("testme").Build()
+
+	s := runNATSserverWithPerms(t, perms)
+	nc, js, errCh := connectTestUser(t, s)
+
+	obj, err := js.ObjectStore(t.Context(), "obj")
+	require.NoError(t, err)
+	t.Run("can read authorized entries", func(t *testing.T) {
+		clearErrors(t, nc, errCh)
+		_, err := obj.GetString(t.Context(), "file1")
+		require.NoError(t, err)
+		_, err = obj.GetString(t.Context(), "file2")
+		require.NoError(t, err)
+	})
+
+	t.Run("can't read other entries", func(t *testing.T) {
+		clearErrors(t, nc, errCh)
+		_, err := obj.GetString(deniedContext(t), "file3")
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+		b64file := base64.StdEncoding.EncodeToString([]byte("file3"))
+		requirePermissionViolation(t, errCh, fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_obj.$O.obj.M.%s", b64file))
+	})
+
+	t.Run("can modify data for allowed key", func(t *testing.T) {
+		clearErrors(t, nc, errCh)
+		_, err := obj.PutString(t.Context(), "testme", "testme")
+		require.NoError(t, err)
+	})
+
+	t.Run("can't modify data for not allowed key", func(t *testing.T) {
+		clearErrors(t, nc, errCh)
+		_, err := obj.PutString(deniedContext(t), "testme2", "testme")
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+		b64file := base64.StdEncoding.EncodeToString([]byte("testme2"))
+		requirePermissionViolation(t, errCh, fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_obj.$O.obj.M.%s", b64file))
+	})
+}

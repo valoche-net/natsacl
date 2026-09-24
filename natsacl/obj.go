@@ -97,12 +97,14 @@ func (s *ObjBuilder) Read(keys ...string) *ObjBuilder {
 func (s *ObjBuilder) Write(keys ...string) *ObjBuilder {
 	if len(keys) == 0 {
 		s.parent.allowPub(
+			fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_%s.$O.%s.M.*", s.name, s.name),
 			fmt.Sprintf("$O.%s.M.*", s.name),
 		)
 	} else {
 		for _, key := range keys {
 			b64key := base64.StdEncoding.EncodeToString([]byte(key))
 			s.parent.allowPub(
+				fmt.Sprintf("$JS.API.DIRECT.GET.OBJ_%s.$O.%s.M.%s", s.name, s.name, b64key),
 				fmt.Sprintf("$O.%s.M.%s", s.name, b64key),
 			)
 		}
