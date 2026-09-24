@@ -2,7 +2,7 @@ package natsacl
 
 import "fmt"
 
-// KVBuilder is used to build stores (KV, obj) related permissions
+// KVBuilder is used to build KV stores related permissions
 type KVBuilder struct {
 	parent *Builder
 	name   string
@@ -46,7 +46,7 @@ func (s *KVBuilder) List() *KVBuilder {
 //
 // ⚠️ It also gives the permissions to watch, hence seeing the data
 func (s *KVBuilder) View() *KVBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
 		fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$KV.%s.>", s.stream(), s.name),
 		fmt.Sprintf("$JS.API.CONSUMER.DELETE.%s.*", s.stream()),
@@ -57,7 +57,7 @@ func (s *KVBuilder) View() *KVBuilder {
 // Create gives the permissions to create a store
 func (s *KVBuilder) Create() *KVBuilder {
 	s.parent.info()
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.CREATE.%s", s.stream()),
 	)
 	return s
@@ -65,7 +65,7 @@ func (s *KVBuilder) Create() *KVBuilder {
 
 // Delete gives the permissions to delete a store
 func (s *KVBuilder) Delete() *KVBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.DELETE.%s", s.stream()),
 	)
 	return s
@@ -73,18 +73,18 @@ func (s *KVBuilder) Delete() *KVBuilder {
 
 // Read gives the permissions to get data from a store, optionally restricted to certain keys
 func (s *KVBuilder) Read(keys ...string) *KVBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
 	)
 	if len(keys) == 0 {
 		s.View()
-		s.parent.allowPub(
+		s.parent.AllowPub(
 			fmt.Sprintf("$JS.API.DIRECT.GET.%s.$KV.%s.*", s.stream(), s.name),
 		)
 		return s
 	}
 	for _, key := range keys {
-		s.parent.allowPub(
+		s.parent.AllowPub(
 			fmt.Sprintf("$JS.API.DIRECT.GET.%s.$KV.%s.%s", s.stream(), s.name, key),
 		)
 	}
@@ -93,17 +93,17 @@ func (s *KVBuilder) Read(keys ...string) *KVBuilder {
 
 // Write gives the permissions to create or update data in a store, optionally restricted to certain keys
 func (s *KVBuilder) Write(keys ...string) *KVBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
 	)
 	if len(keys) == 0 {
-		s.parent.allowPub(
+		s.parent.AllowPub(
 			fmt.Sprintf("$KV.%s.*", s.name),
 		)
 		return s
 	}
 	for _, key := range keys {
-		s.parent.allowPub(
+		s.parent.AllowPub(
 			fmt.Sprintf("$KV.%s.%s", s.name, key),
 		)
 	}

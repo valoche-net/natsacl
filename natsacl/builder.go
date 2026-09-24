@@ -36,13 +36,15 @@ func (b *Builder) Pub() []string {
 	return keys
 }
 
-func (b *Builder) allowPub(subjects ...string) {
+// AllowPub adds the provided subjects
+func (b *Builder) AllowPub(subjects ...string) {
 	for _, s := range subjects {
 		b.pub[s] = nil
 	}
 }
 
-func (b *Builder) allowSub(subjects ...string) {
+// AllowSub adds the provided subjects
+func (b *Builder) AllowSub(subjects ...string) {
 	for _, s := range subjects {
 		b.sub[s] = nil
 	}
@@ -50,6 +52,10 @@ func (b *Builder) allowSub(subjects ...string) {
 
 func (b *Builder) inbox() {
 	b.sub["_INBOX.>"] = nil
+}
+
+func (b *Builder) pubInbox() {
+	b.pub["_INBOX.>"] = nil
 }
 
 func (b *Builder) info() {

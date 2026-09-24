@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ObjBuilder is used to build stores (KV, obj) related permissions
+// ObjBuilder is used to build object stores related permissions
 type ObjBuilder struct {
 	parent *Builder
 	name   string
@@ -49,7 +49,7 @@ func (s *ObjBuilder) List() *ObjBuilder {
 //
 // ⚠️ It also gives the permissions to watch, hence seeing the data
 func (s *ObjBuilder) View() *ObjBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.>", s.stream(), s.name),
 		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
 		fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$O.%s.M.>", s.stream(), s.name),
@@ -60,7 +60,7 @@ func (s *ObjBuilder) View() *ObjBuilder {
 
 // Create gives the permissions to create/update a store
 func (s *ObjBuilder) Create() *ObjBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.CREATE.%s", s.stream()),
 		fmt.Sprintf("$JS.API.STREAM.UPDATE.%s", s.stream()),
 	)
@@ -69,7 +69,7 @@ func (s *ObjBuilder) Create() *ObjBuilder {
 
 // Delete gives the permissions to delete a store
 func (s *ObjBuilder) Delete() *ObjBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.DELETE.%s", s.stream()),
 	)
 	return s
@@ -80,21 +80,21 @@ func (s *ObjBuilder) Delete() *ObjBuilder {
 // ⚠️ if read is restricted to certain keys, listing the keys is denied
 func (s *ObjBuilder) Read(keys ...string) *ObjBuilder {
 	if len(keys) == 0 {
-		s.parent.allowPub(
+		s.parent.AllowPub(
 			fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$O.%s.M.*", s.stream(), s.name),
 			fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.>", s.stream(), s.name),
 		)
 	} else {
 		for _, key := range keys {
 			b64key := base64.StdEncoding.EncodeToString([]byte(key))
-			s.parent.allowPub(
+			s.parent.AllowPub(
 				fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$O.%s.M.%s", s.stream(), s.name, b64key),
 				fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.%s", s.stream(), s.name, b64key),
 			)
 		}
 
 	}
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
 		fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.*.$O.%s.C.*", s.stream(), s.name),
 		fmt.Sprintf("$JS.API.CONSUMER.DELETE.%s.*", s.stream()),
@@ -105,20 +105,20 @@ func (s *ObjBuilder) Read(keys ...string) *ObjBuilder {
 // Write gives the permissions to create or update data in a store, optionally restricted to certain keys
 func (s *ObjBuilder) Write(keys ...string) *ObjBuilder {
 	if len(keys) == 0 {
-		s.parent.allowPub(
+		s.parent.AllowPub(
 			fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.*", s.stream(), s.name),
 			fmt.Sprintf("$O.%s.M.*", s.name),
 		)
 	} else {
 		for _, key := range keys {
 			b64key := base64.StdEncoding.EncodeToString([]byte(key))
-			s.parent.allowPub(
+			s.parent.AllowPub(
 				fmt.Sprintf("$JS.API.DIRECT.GET.%s.$O.%s.M.%s", s.stream(), s.name, b64key),
 				fmt.Sprintf("$O.%s.M.%s", s.name, b64key),
 			)
 		}
 	}
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$O.%s.C.*", s.name),
 		fmt.Sprintf("$JS.API.STREAM.PURGE.%s", s.stream()),
 	)
@@ -127,7 +127,7 @@ func (s *ObjBuilder) Write(keys ...string) *ObjBuilder {
 
 // Seal gives the permissions to seal a store
 func (s *ObjBuilder) Seal() *ObjBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.stream()),
 		fmt.Sprintf("$JS.API.STREAM.UPDATE.%s", s.stream()),
 	)

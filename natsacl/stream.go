@@ -34,7 +34,7 @@ func (s *StreamBuilder) List() *StreamBuilder {
 
 // Consume gives the permissions to consume messages from a stream
 func (s *StreamBuilder) Consume() *StreamBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.name),
 		fmt.Sprintf("$JS.API.CONSUMER.CREATE.%s.>", s.name),
 		fmt.Sprintf("$JS.API.CONSUMER.DELETE.%s.>", s.name),
@@ -47,7 +47,7 @@ func (s *StreamBuilder) Consume() *StreamBuilder {
 
 // Create gives the permissions to create/update a stream
 func (s *StreamBuilder) Create() *StreamBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		"$JS.API.INFO",
 		fmt.Sprintf("$JS.API.STREAM.CREATE.%s", s.name),
 		fmt.Sprintf("$JS.API.STREAM.UPDATE.%s", s.name),
@@ -58,7 +58,7 @@ func (s *StreamBuilder) Create() *StreamBuilder {
 
 // Update gives the permissions to delete a stream
 func (s *StreamBuilder) Delete() *StreamBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.DELETE.%s", s.name),
 	)
 	return s
@@ -66,7 +66,7 @@ func (s *StreamBuilder) Delete() *StreamBuilder {
 
 // Info gives the permissions to view information on a stream
 func (s *StreamBuilder) Info() *StreamBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.INFO.%s", s.name),
 	)
 	s.parent.inbox()
@@ -75,7 +75,7 @@ func (s *StreamBuilder) Info() *StreamBuilder {
 
 // Get gives the permissions to get messages from a stream
 func (s *StreamBuilder) GetMessage() *StreamBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.MSG.GET.%s", s.name),
 	)
 	return s
@@ -83,7 +83,7 @@ func (s *StreamBuilder) GetMessage() *StreamBuilder {
 
 // Delete gives the permissions to delete messages from a stream
 func (s *StreamBuilder) DeleteMessage() *StreamBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.MSG.DELETE.%s", s.name),
 	)
 	return s
@@ -91,7 +91,7 @@ func (s *StreamBuilder) DeleteMessage() *StreamBuilder {
 
 // Purge gives the permissions to purge messages from a stream
 func (s *StreamBuilder) Purge() *StreamBuilder {
-	s.parent.allowPub(
+	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.PURGE.%s", s.name),
 	)
 	return s
