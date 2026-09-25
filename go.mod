@@ -1,10 +1,10 @@
-module test
+module github.com/valoche-net/natsacl/v2
 
 go 1.27.1
 
 require (
 	github.com/nats-io/nats-server/v2 v2.15.0
-	github.com/nats-io/nats.go v1.51.0
+	github.com/nats-io/nats.go v1.54.0
 	github.com/stretchr/testify v1.12.1
 )
 
