@@ -1,4 +1,4 @@
-package natsacl
+package natsacl_test
 
 import (
 	"context"
@@ -8,10 +8,11 @@ import (
 
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
+	"github.com/valoche-net/natsacl/v2"
 )
 
 func TestOBJCreate(t *testing.T) {
-	perms := NewBuilder().Obj("myobj").Create().Build()
+	perms := natsacl.NewBuilder().Obj("myobj").Create().Build()
 
 	s := runNATSserverWithPerms(t, perms)
 	nc, js, errCh := connectTestUser(t, s)
@@ -46,7 +47,7 @@ func TestOBJCreate(t *testing.T) {
 }
 
 func TestObjReadAndWrite(t *testing.T) {
-	perms := NewBuilder().Obj("obj").Read("file1", "file2").Write("testme").Build()
+	perms := natsacl.NewBuilder().Obj("obj").Read("file1", "file2").Write("testme").Build()
 
 	s := runNATSserverWithPerms(t, perms)
 	nc, js, errCh := connectTestUser(t, s)
@@ -88,7 +89,7 @@ func TestObjReadAndWrite(t *testing.T) {
 }
 
 func TestObjList(t *testing.T) {
-	perms := NewBuilder().Obj("obj").List().Build()
+	perms := natsacl.NewBuilder().Obj("obj").List().Build()
 	s := runNATSserverWithPerms(t, perms)
 	nc, js, errCh := connectTestUser(t, s)
 
@@ -108,7 +109,7 @@ func TestObjList(t *testing.T) {
 }
 
 func TestObjAll(t *testing.T) {
-	perms := NewBuilder().Obj("*").All().Build()
+	perms := natsacl.NewBuilder().Obj("*").All().Build()
 	s := runNATSserverWithPerms(t, perms)
 	nc, js, errCh := connectTestUser(t, s)
 

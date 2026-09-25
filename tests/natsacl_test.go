@@ -1,4 +1,4 @@
-package natsacl
+package natsacl_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
+	"github.com/valoche-net/natsacl/v2"
 )
 
 func runNATSserver(t *testing.T, users ...*server.User) *server.Server {
@@ -69,7 +70,7 @@ func requirePermissionViolation(t *testing.T, errCh <-chan error, subject string
 	}
 }
 
-func runNATSserverWithPerms(t *testing.T, perms ...*Builder) *server.Server {
+func runNATSserverWithPerms(t *testing.T, perms ...*natsacl.Builder) *server.Server {
 	t.Helper()
 
 	var users []*server.User

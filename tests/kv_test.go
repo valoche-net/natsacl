@@ -1,4 +1,4 @@
-package natsacl
+package natsacl_test
 
 import (
 	"context"
@@ -7,10 +7,11 @@ import (
 
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
+	"github.com/valoche-net/natsacl/v2"
 )
 
 func TestKVCreate(t *testing.T) {
-	perms := NewBuilder().KV("mykv").Create().Build()
+	perms := natsacl.NewBuilder().KV("mykv").Create().Build()
 
 	s := runNATSserverWithPerms(t, perms)
 	nc, js, errCh := connectTestUser(t, s)
@@ -45,7 +46,7 @@ func TestKVCreate(t *testing.T) {
 }
 
 func TestKVReadAnyKey(t *testing.T) {
-	perms := NewBuilder().KV("kv").Read().Build()
+	perms := natsacl.NewBuilder().KV("kv").Read().Build()
 
 	s := runNATSserverWithPerms(t, perms)
 	_, js, errCh := connectTestUser(t, s)
@@ -76,7 +77,7 @@ func TestKVReadAnyKey(t *testing.T) {
 }
 
 func TestKVReadWriteKey(t *testing.T) {
-	perms := NewBuilder().KV("kv").Read("key1").Write("key3", "newkey").Build()
+	perms := natsacl.NewBuilder().KV("kv").Read("key1").Write("key3", "newkey").Build()
 
 	s := runNATSserverWithPerms(t, perms)
 	_, js, errCh := connectTestUser(t, s)
@@ -114,7 +115,7 @@ func TestKVReadWriteKey(t *testing.T) {
 }
 
 func TestKVWriteAnyKey(t *testing.T) {
-	perms := NewBuilder().KV("kv").Write().Build()
+	perms := natsacl.NewBuilder().KV("kv").Write().Build()
 	s := runNATSserverWithPerms(t, perms)
 	_, js, errCh := connectTestUser(t, s)
 

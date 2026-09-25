@@ -1,4 +1,4 @@
-package natsacl
+package natsacl_test
 
 import (
 	"context"
@@ -6,10 +6,11 @@ import (
 
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/stretchr/testify/require"
+	"github.com/valoche-net/natsacl/v2"
 )
 
 func TestStreamCreate(t *testing.T) {
-	perms := NewBuilder().Stream("stream").Create().Build()
+	perms := natsacl.NewBuilder().Stream("stream").Create().Build()
 
 	s := runNATSserverWithPerms(t, perms)
 	nc, js, errCh := connectTestUser(t, s)
