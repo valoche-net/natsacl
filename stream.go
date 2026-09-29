@@ -23,7 +23,7 @@ func (s *StreamBuilder) Build() *Builder {
 
 // All gives all permissions except List
 func (s *StreamBuilder) All() *StreamBuilder {
-	return s.List().Create().Delete().Consume().Info().GetMessage().DeleteMessage().Purge()
+	return s.List().Create().Delete().Consume().Info().Read().Write().Purge()
 }
 
 // List gives the permissions to list the streams
@@ -74,7 +74,7 @@ func (s *StreamBuilder) Info() *StreamBuilder {
 }
 
 // Get gives the permissions to get messages from a stream
-func (s *StreamBuilder) GetMessage() *StreamBuilder {
+func (s *StreamBuilder) Read() *StreamBuilder {
 	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.MSG.GET.%s", s.name),
 	)
@@ -82,7 +82,7 @@ func (s *StreamBuilder) GetMessage() *StreamBuilder {
 }
 
 // Delete gives the permissions to delete messages from a stream
-func (s *StreamBuilder) DeleteMessage() *StreamBuilder {
+func (s *StreamBuilder) Write() *StreamBuilder {
 	s.parent.AllowPub(
 		fmt.Sprintf("$JS.API.STREAM.MSG.DELETE.%s", s.name),
 	)

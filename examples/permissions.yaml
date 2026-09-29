@@ -1,0 +1,28 @@
+configReader:
+  - kv: CONFIG
+    read: [foo, bar]
+# - obj: DATA
+#   read: [element1, element2]
+# admin:
+# - kv: "*"
+#   allow: ["*"]
+#   read: ["*"]
+#   write: true
+# - obj: "*"
+#   allow: ["*"]
+#   read: true
+#   write: true
+# - stream: "*"
+#   allow: [list, info, create, delete, read, write, purge]
+# - service: "acme"
+#   allow: [request, respond, monitor]
+#   subjects: ["ducon.*"]
+# configWriter:
+#   - kv: CONFIG
+#     allow: [list, view, create, delete]
+#     read: true
+#     write: [foo, bar, buzz]
+#   - obj: DATA
+#     allow: [list, view, create, delete, seal]
+#     read: true
+#     write: true

@@ -36,7 +36,7 @@ func (s *KVBuilder) All() *KVBuilder {
 	return s.View().Create().Delete().Read().Write()
 }
 
-// List gives the permissions to list the store
+// List gives the permissions to list the stores
 func (s *KVBuilder) List() *KVBuilder {
 	s.parent.names()
 	return s
